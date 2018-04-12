@@ -1,6 +1,6 @@
 // controller.js
 const mqtt = require('mqtt')
-const client = mqtt.connect('mqtt://localhost:1883')
+const client = mqtt.connect('mqtt://broker.hivemq.com')
 
 var garageState = ''
 var connected = false
