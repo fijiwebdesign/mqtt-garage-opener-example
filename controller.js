@@ -9,6 +9,7 @@ client.on('connect', () => {
   console.log('Connected, subscribing...')
   client.subscribe('garage/connected')
   client.subscribe('garage/state')
+  client.publish('controller/connected', 'true')
 })
 
 client.on('message', (topic, message) => {

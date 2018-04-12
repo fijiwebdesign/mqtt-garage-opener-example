@@ -9,12 +9,10 @@ const client = mqtt.connect('mqtt://broker.hivemq.com')
 var state = 'closed'
 
 client.on('connect', () => {
+  console.log('Connected, subscribing...')
   client.subscribe('garage/open')
   client.subscribe('garage/close')
-
-  // Inform controllers that garage is connected
-  client.publish('garage/connected', 'true')
-  sendStateUpdate()
+  client.subscribe('controller/connected')
 })
 
 client.on('message', (topic, message) => {
@@ -24,6 +22,8 @@ client.on('message', (topic, message) => {
       return handleOpenRequest(message)
     case 'garage/close':
       return handleCloseRequest(message)
+    case 'controller/connected':
+      return handleControllerConnected(message)
   }
 })
 
@@ -57,6 +57,12 @@ function handleCloseRequest (message) {
       sendStateUpdate()
     }, 5000)
   }
+}
+
+function handleControllerConnected (message) {
+  // Inform controllers that garage is connected
+  client.publish('garage/connected', 'true')
+  sendStateUpdate()
 }
 
 /**
