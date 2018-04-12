@@ -1,11 +1,12 @@
 // controller.js
 const mqtt = require('mqtt')
-const client = mqtt.connect('mqtt://broker.hivemq.com')
+const client = mqtt.connect('mqtt://localhost:1883')
 
 var garageState = ''
 var connected = false
 
 client.on('connect', () => {
+  console.log('Connected, subscribing...')
   client.subscribe('garage/connected')
   client.subscribe('garage/state')
 })
@@ -48,14 +49,34 @@ function closeGarageDoor () {
 
 // --- For Demo Purposes Only ----//
 
-// simulate opening garage door
-setTimeout(() => {
-  console.log('open door')
-  openGarageDoor()
-}, 5000)
+// promise garage door connected
+function onceGarageConnected(timeout = 5000) {
+  return new Promise((resolve, reject) => {
+    var timer = setTimeout(() => reject(), timeout)
+    client.once('message', (topic, message) => {
+      if(topic === 'garage/connected') {
+        resolve(message)
+      }
+    })
+  })
+}
 
-// simulate closing garage door
-setTimeout(() => {
-  console.log('close door')
-  closeGarageDoor()
-}, 20000)
+onceGarageConnected()
+  .then(() => {
+    
+    // simulate opening garage door
+    setTimeout(() => {
+      console.log('open door')
+      openGarageDoor()
+    }, 5000)
+
+    // simulate closing garage door
+    setTimeout(() => {
+      console.log('close door')
+      closeGarageDoor()
+    }, 20000)
+
+  })
+  .catch(() => {
+      console.log('Failed to connect to garage door')
+  })
